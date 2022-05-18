@@ -2743,4 +2743,17 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
     }
 
     //endregion
+
+    public void setAutoFocusMode(boolean isAuto) {
+        if(isAuto) {
+            mCameraEngine.setFocusMode(2);
+        } else {
+            mCameraEngine.setFocusMode(1);
+        }
+    }
+
+    public void setManualFocus(float value) {
+        mCameraEngine.setFocusMode(1);
+        mCameraEngine.setFocusValue(value);
+    }
 }
