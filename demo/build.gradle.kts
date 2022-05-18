@@ -9,8 +9,8 @@ android {
         applicationId = "com.otaliastudios.cameraview.demo"
         minSdk = property("minSdkVersion") as Int
         targetSdk = property("targetSdkVersion") as Int
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.7.3"
         vectorDrawables.useSupportLibrary = true
     }
     sourceSets["main"].java.srcDir("src/main/kotlin")
