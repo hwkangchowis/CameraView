@@ -2742,5 +2742,12 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
 
     }
 
+    public void startAutoFocusCenter() {
+        Size size = new Size(getWidth(), getHeight());
+        PointF point = new PointF(getWidth() / 2, getHeight() / 2);
+        MeteringRegions regions = MeteringRegions.fromPoint(size, point);
+        mCameraEngine.startAutoFocus(null, regions, point);
+    }
+
     //endregion
 }
