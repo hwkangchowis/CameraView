@@ -935,6 +935,81 @@ public class Camera1Engine extends CameraBaseEngine implements
         });
     }
 
+    @Override
+    public void startAutoFocus(@Nullable Gesture gesture, @NonNull MeteringRegions regions,
+                               @NonNull PointF legacyPoint, AutoFocusCallback callback) {
+        getOrchestrator().scheduleStateful("auto focus", CameraState.BIND, new Runnable() {
+            @Override
+            public void run() {
+                if (!mCameraOptions.isAutoFocusSupported()) return;
+                MeteringTransform<Camera.Area> transform = new Camera1MeteringTransform(
+                        getAngles(),
+                        getPreview().getSurfaceSize());
+                MeteringRegions transformed = regions.transform(transform);
+
+                Camera.Parameters params = mCamera.getParameters();
+                int maxAF = params.getMaxNumFocusAreas();
+                int maxAE = params.getMaxNumMeteringAreas();
+                if (maxAF > 0) params.setFocusAreas(transformed.get(maxAF, transform));
+                if (maxAE > 0) params.setMeteringAreas(transformed.get(maxAE, transform));
+                params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                mCamera.setParameters(params);
+                getCallback().dispatchOnFocusStart(gesture, legacyPoint);
+
+                // The auto focus callback is not guaranteed to be called, but we really want it
+                // to be. So we remove the old runnable if still present and post a new one.
+                getOrchestrator().remove(JOB_FOCUS_END);
+                getOrchestrator().scheduleDelayed(JOB_FOCUS_END, true, AUTOFOCUS_END_DELAY_MILLIS,
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                getCallback().dispatchOnFocusEnd(gesture, false, legacyPoint);
+                            }
+                        });
+
+                // Wrapping autoFocus in a try catch to handle some device specific exceptions,
+                // see See https://github.com/natario1/CameraView/issues/181.
+                try {
+                    mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                        @Override
+                        public void onAutoFocus(boolean success, Camera camera) {
+                            LOG.e("startAutoFocus:", "success", success);
+                            getOrchestrator().remove(JOB_FOCUS_END);
+                            getOrchestrator().remove(JOB_FOCUS_RESET);
+                            getCallback().dispatchOnFocusEnd(gesture, success, legacyPoint);
+                            if (shouldResetAutoFocus()) {
+                                getOrchestrator().scheduleStatefulDelayed(
+                                        JOB_FOCUS_RESET,
+                                        CameraState.ENGINE,
+                                        getAutoFocusResetDelay(),
+                                        new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mCamera.cancelAutoFocus();
+                                                Camera.Parameters params = mCamera.getParameters();
+                                                int maxAF = params.getMaxNumFocusAreas();
+                                                int maxAE = params.getMaxNumMeteringAreas();
+                                                if (maxAF > 0) params.setFocusAreas(null);
+                                                if (maxAE > 0) params.setMeteringAreas(null);
+                                                applyDefaultFocus(params); // Revert to internal focus.
+                                                mCamera.setParameters(params);
+                                            }
+                                        });
+                            }
+
+                            if (callback != null)
+                                callback.returnAutoFocus(success);
+                        }
+                    });
+                } catch (RuntimeException e) {
+                    LOG.e("startAutoFocus:", "Error calling autoFocus", e);
+                    // Let the mFocusEndRunnable do its job. (could remove it and quickly dispatch
+                    // onFocusEnd here, but let's make it simpler).
+                }
+            }
+        });
+    }
+
     //endregion
 }
 

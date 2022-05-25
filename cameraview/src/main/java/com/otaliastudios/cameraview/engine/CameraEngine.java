@@ -111,6 +111,10 @@ public abstract class CameraEngine implements
         PictureRecorder.PictureResultListener,
         VideoRecorder.VideoResultListener {
 
+    public interface AutoFocusCallback {
+        void returnAutoFocus(boolean is_focus);
+    }
+
     public interface Callback {
         @NonNull Context getContext();
         void dispatchOnCameraOpened(@NonNull CameraOptions options);
@@ -710,6 +714,11 @@ public abstract class CameraEngine implements
     public abstract void startAutoFocus(@Nullable Gesture gesture,
                                         @NonNull MeteringRegions regions,
                                         @NonNull PointF legacyPoint);
+
+    public abstract void startAutoFocus(@Nullable Gesture gesture,
+                                        @NonNull MeteringRegions regions,
+                                        @NonNull PointF legacyPoint,
+                                        AutoFocusCallback callback);
 
     public abstract void setPlaySounds(boolean playSounds);
 

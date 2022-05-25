@@ -113,6 +113,10 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
     private final static String TAG = CameraView.class.getSimpleName();
     private static final CameraLogger LOG = CameraLogger.create(TAG);
 
+    public interface onCameraViewListener {
+        void isAutoFocus(boolean is_success);
+    }
+
     public final static int PERMISSION_REQUEST_CODE = 16;
 
     final static long DEFAULT_AUTOFOCUS_RESET_DELAY_MILLIS = 3000;
@@ -2747,6 +2751,19 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         PointF point = new PointF(getWidth() / 2, getHeight() / 2);
         MeteringRegions regions = MeteringRegions.fromPoint(size, point);
         mCameraEngine.startAutoFocus(null, regions, point);
+    }
+
+    public void startAutoFocusCenter(onCameraViewListener listener) {
+        Size size = new Size(getWidth(), getHeight());
+        PointF point = new PointF(getWidth() / 2, getHeight() / 2);
+        MeteringRegions regions = MeteringRegions.fromPoint(size, point);
+        mCameraEngine.startAutoFocus(null, regions, point, new CameraEngine.AutoFocusCallback() {
+            @Override
+            public void returnAutoFocus(boolean is_focus) {
+                if (listener != null)
+                    listener.isAutoFocus(is_focus);
+            }
+        });
     }
 
     //endregion
