@@ -9,7 +9,7 @@ android {
         applicationId = "com.otaliastudios.cameraview.demo"
         minSdk = property("minSdkVersion") as Int
         targetSdk = property("targetSdkVersion") as Int
-        versionCode = 2
+        versionCode = 3
         versionName = "2.7.4"
         vectorDrawables.useSupportLibrary = true
     }
