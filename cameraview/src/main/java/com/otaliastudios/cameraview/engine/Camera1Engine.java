@@ -901,6 +901,7 @@ public class Camera1Engine extends CameraBaseEngine implements
                     mCamera.autoFocus(new Camera.AutoFocusCallback() {
                         @Override
                         public void onAutoFocus(boolean success, Camera camera) {
+                            LOG.e("startAutoFocus:", "success", success);
                             getOrchestrator().remove(JOB_FOCUS_END);
                             getOrchestrator().remove(JOB_FOCUS_RESET);
                             getCallback().dispatchOnFocusEnd(gesture, success, legacyPoint);
