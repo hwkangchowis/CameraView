@@ -10,7 +10,7 @@ android {
         minSdk = property("minSdkVersion") as Int
         targetSdk = property("targetSdkVersion") as Int
         versionCode = 2
-        versionName = "2.7.3"
+        versionName = "2.7.4"
         vectorDrawables.useSupportLibrary = true
     }
     sourceSets["main"].java.srcDir("src/main/kotlin")
